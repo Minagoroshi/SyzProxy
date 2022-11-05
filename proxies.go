@@ -42,13 +42,13 @@ func (pm *ProxyManager) GetRandomTransport() (*http.Transport, error) {
 	proxyType := strings.ToLower(pm.ProxyType)
 	switch proxyType {
 	case "http":
-		return TransportFromProxy(pm.GetRandomProxy(), pm.ProxyType)
+		return TransportFromProxy(pm.GetRandomProxy(), proxyType)
 	case "socks5":
-		return TransportFromProxy(pm.GetRandomProxy(), pm.ProxyType)
+		return TransportFromProxy(pm.GetRandomProxy(), proxyType)
 	case "socks4":
-		return TransportFromProxy(pm.GetRandomProxy(), pm.ProxyType)
+		return TransportFromProxy(pm.GetRandomProxy(), proxyType)
 	case "socks4a":
-		return TransportFromProxy(pm.GetRandomProxy(), pm.ProxyType)
+		return TransportFromProxy(pm.GetRandomProxy(), proxyType)
 	default:
 		return nil, errors.New("Invalid proxy type")
 	}
