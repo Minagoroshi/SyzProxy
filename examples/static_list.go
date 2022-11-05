@@ -12,6 +12,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println(PManager.ProxyType)
 	log.Println("Loaded", num, "proxies")
 
 	transport, err := PManager.GetRandomTransport()

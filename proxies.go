@@ -3,6 +3,8 @@ package SyzProxy
 import (
 	"bufio"
 	"errors"
+	"fmt"
+	"h12.io/socks"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -12,8 +14,11 @@ import (
 	"time"
 )
 
-// Todo: add support for socks
 // Todo: add IsProxyAlive value to Proxy and its functionality
+
+var (
+	ProxyTypes = []string{"http", "socks5", "socks4", "socks4a"}
+)
 
 type ProxyManager struct {
 	ProxyList []Proxy
@@ -27,9 +32,26 @@ type Proxy struct {
 	password string
 }
 
+// NewProxyManager returns a new ProxyManager
+func NewProxyManager() ProxyManager {
+	return ProxyManager{}
+}
+
 // GetRandomTransport returns a transport using the GetRandomProxy function
 func (pm *ProxyManager) GetRandomTransport() (*http.Transport, error) {
-	return TransportFromProxy(pm.GetRandomProxy())
+	proxyType := strings.ToLower(pm.ProxyType)
+	switch proxyType {
+	case "http":
+		return TransportFromProxy(pm.GetRandomProxy(), pm.ProxyType)
+	case "socks5":
+		return TransportFromProxy(pm.GetRandomProxy(), pm.ProxyType)
+	case "socks4":
+		return TransportFromProxy(pm.GetRandomProxy(), pm.ProxyType)
+	case "socks4a":
+		return TransportFromProxy(pm.GetRandomProxy(), pm.ProxyType)
+	default:
+		return nil, errors.New("Invalid proxy type")
+	}
 }
 
 // GetRandomProxy returns a random proxy from the list
@@ -48,11 +70,10 @@ func (pm *ProxyManager) GetRandomProxy() Proxy {
 // LoadFromFile loads a list of proxies from a file
 func (pm *ProxyManager) LoadFromFile(filename string, proxyType string) (int, error) {
 	proxyType = strings.ToLower(proxyType)
-	if proxyType != "http" && proxyType != "https" && proxyType != "socks5" && proxyType != "socks4" && proxyType != "socks4a" {
-		if strings.Contains(proxyType, "socks") {
-			return 0, errors.New("Unsupported proxy type: " + proxyType)
-		}
+	if !arrayContains(ProxyTypes, proxyType) {
 		return 0, errors.New("Invalid proxy type")
+	} else if proxyType == "https" {
+		proxyType = "http"
 	}
 
 	file, err := os.Open(filename)
@@ -105,34 +126,62 @@ func ReturnProxy(host string, port int, username string, password string) Proxy 
 }
 
 // TranportFromProxy returns a http.Transport with the proxy set
-func TransportFromProxy(proxy Proxy) (*http.Transport, error) {
+func TransportFromProxy(proxy Proxy, proxyType string) (*http.Transport, error) {
 
 	// Validate the host url
 	_, err := url.Parse("http://" + proxy.host + ":" + strconv.Itoa(proxy.port))
 	if err != nil {
 		return nil, err
 	}
-	if proxy.username == "" && proxy.password == "" {
-		return &http.Transport{
-			Proxy: http.ProxyURL(&url.URL{
-				Scheme: "http",
-				Host:   proxy.host + ":" + strconv.Itoa(proxy.port),
-			}),
-		}, nil
-	} else {
-		return &http.Transport{
-			Proxy: http.ProxyURL(&url.URL{
-				Scheme: "http",
-				Host:   proxy.host + ":" + strconv.Itoa(proxy.port),
-				User:   url.UserPassword(proxy.username, proxy.password),
-			}),
-		}, nil
+
+	proxyType = strings.ToLower(proxyType)
+	switch proxyType {
+	case "http":
+		if proxy.username == "" && proxy.password == "" {
+			return &http.Transport{
+				Proxy: http.ProxyURL(&url.URL{
+					Scheme: "http",
+					Host:   proxy.host + ":" + strconv.Itoa(proxy.port),
+				}),
+			}, nil
+		} else {
+			return &http.Transport{
+				Proxy: http.ProxyURL(&url.URL{
+					Scheme: "http",
+					Host:   proxy.host + ":" + strconv.Itoa(proxy.port),
+					User:   url.UserPassword(proxy.username, proxy.password),
+				}),
+			}, nil
+		}
+	case "socks4":
+		userpass := proxy.username + ":" + proxy.password + "@"
+		if proxy.username == "" && proxy.password == "" {
+			userpass = ""
+		}
+		dialSocksProxy := socks.Dial(fmt.Sprintf("socks4://%s%s:%s?timeout=10s", userpass, proxy.host, strconv.Itoa(proxy.port)))
+		return &http.Transport{Dial: dialSocksProxy}, nil
+	case "socks4a":
+		userpass := proxy.username + ":" + proxy.password
+		if proxy.username == "" && proxy.password == "" {
+			userpass = ""
+		}
+		dialSocksProxy := socks.Dial(fmt.Sprintf("socks4a://%s%s:%s?timeout=10s", userpass, proxy.host, strconv.Itoa(proxy.port)))
+		return &http.Transport{Dial: dialSocksProxy}, nil
+	case "socks5":
+		userpass := proxy.username + ":" + proxy.password
+		if proxy.username == "" && proxy.password == "" {
+			userpass = ""
+		}
+		dialSocksProxy := socks.Dial(fmt.Sprintf("socks5://%s%s:%s?timeout=10s", userpass, proxy.host, strconv.Itoa(proxy.port)))
+		return &http.Transport{Dial: dialSocksProxy}, nil
+	default:
+		return nil, errors.New("Invalid proxy type")
 	}
 }
 
 // ClientFromProxy returns a http.Client with the transport set
-func ClientFromProxy(proxy Proxy) (*http.Client, error) {
-	transport, err := TransportFromProxy(proxy)
+func (pm *ProxyManager) ClientFromProxy(proxy Proxy) (*http.Client, error) {
+	transport, err := TransportFromProxy(proxy, pm.ProxyType)
 	if err != nil {
 		return nil, err
 	}
@@ -147,4 +196,13 @@ func ClientFromTransport(transport *http.Transport) *http.Client {
 	return &http.Client{
 		Transport: transport,
 	}
+}
+
+func arrayContains(array []string, value string) bool {
+	for _, v := range array {
+		if v == value {
+			return true
+		}
+	}
+	return false
 }
