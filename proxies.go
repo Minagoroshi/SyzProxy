@@ -68,6 +68,7 @@ func (pm *ProxyManager) GetRandomProxy() Proxy {
 }
 
 // LoadFromFile loads a list of proxies from a file
+// Proxy types are http, socks4, socks4a, socks5
 func (pm *ProxyManager) LoadFromFile(filename string, proxyType string) (int, error) {
 	proxyType = strings.ToLower(proxyType)
 	if !arrayContains(ProxyTypes, proxyType) {
@@ -126,6 +127,7 @@ func ReturnProxy(host string, port int, username string, password string) Proxy 
 }
 
 // TranportFromProxy returns a http.Transport with the proxy set
+// Proxy types are http, socks4, socks4a, socks5
 func TransportFromProxy(proxy Proxy, proxyType string) (*http.Transport, error) {
 
 	// Validate the host url
@@ -180,8 +182,14 @@ func TransportFromProxy(proxy Proxy, proxyType string) (*http.Transport, error) 
 }
 
 // ClientFromProxy returns a http.Client with the transport set
-func (pm *ProxyManager) ClientFromProxy(proxy Proxy) (*http.Client, error) {
-	transport, err := TransportFromProxy(proxy, pm.ProxyType)
+// Proxy types are http, socks4, socks4a, socks5
+func ClientFromProxy(proxy Proxy, proxyType string) (*http.Client, error) {
+	if !arrayContains(ProxyTypes, proxyType) {
+		return nil, errors.New("Invalid proxy type")
+	}
+	proxyType = strings.ToLower(proxyType)
+
+	transport, err := TransportFromProxy(proxy, proxyType)
 	if err != nil {
 		return nil, err
 	}
