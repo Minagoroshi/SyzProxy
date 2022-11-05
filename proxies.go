@@ -163,14 +163,14 @@ func TransportFromProxy(proxy Proxy, proxyType string) (*http.Transport, error) 
 		dialSocksProxy := socks.Dial(fmt.Sprintf("socks4://%s%s:%s?timeout=10s", userpass, proxy.host, strconv.Itoa(proxy.port)))
 		return &http.Transport{Dial: dialSocksProxy}, nil
 	case "socks4a":
-		userpass := proxy.username + ":" + proxy.password
+		userpass := proxy.username + ":" + proxy.password + "@"
 		if proxy.username == "" && proxy.password == "" {
 			userpass = ""
 		}
 		dialSocksProxy := socks.Dial(fmt.Sprintf("socks4a://%s%s:%s?timeout=10s", userpass, proxy.host, strconv.Itoa(proxy.port)))
 		return &http.Transport{Dial: dialSocksProxy}, nil
 	case "socks5":
-		userpass := proxy.username + ":" + proxy.password
+		userpass := proxy.username + ":" + proxy.password + "@"
 		if proxy.username == "" && proxy.password == "" {
 			userpass = ""
 		}
