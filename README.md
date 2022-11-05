@@ -4,6 +4,7 @@
 ## Table of Contents
 - [Installation](#installation)
 - [Examples](#examples)
+- [Documentation](#documentation)
 
 ## Installation
 ```bash
@@ -83,4 +84,7 @@ func main() {
 }
 
 ```
+
+##Documentation
+https://pkg.go.dev/github.com/Minagoroshi/SyzProxy#section-readme
 
