@@ -1,4 +1,4 @@
-module github.com/Minagoroshi/SyzProxy
+module github.com/minagoroshi/syzproxy
 
 go 1.19
 
