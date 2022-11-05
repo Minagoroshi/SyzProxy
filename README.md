@@ -4,10 +4,11 @@
 ## Table of Contents
 - [Installation](#installation)
 - [Examples](#examples)
+- [Documentation](#documentation)
 
 ## Installation
 ```bash
-go get github.com/0xrawsec/syzproxy
+go get github.com/minagoroshi/syzproxy@v0.1.0
 ```
 
 ## Examples
@@ -83,4 +84,7 @@ func main() {
 }
 
 ```
+
+## Documentation
+https://pkg.go.dev/github.com/Minagoroshi/SyzProxy#section-readme
 
