@@ -7,7 +7,9 @@ import (
 )
 
 func main() {
-	PManager := &SyzProxy.ProxyManager{}
+	PManager := SyzProxy.NewProxyManager()
+	// You can also just do PManager := &SyzProxy.ProxyManager{}
+
 	num, err := PManager.LoadFromFile("proxies.txt", "http")
 	if err != nil {
 		log.Fatal(err)
