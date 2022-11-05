@@ -8,7 +8,7 @@
 
 ## Installation
 ```bash
-go get github.com/minagoroshi/syzproxy@v0.1.1
+go get github.com/minagoroshi/syzproxy@v0.1.2
 ```
 
 ## Examples
