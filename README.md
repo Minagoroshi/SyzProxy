@@ -26,7 +26,7 @@ import (
 func main() {
 
 	// If your proxy does not require authentication leave the username and password empty ("")
-	proxyClient, err := SyzProxy.ClientFromProxy(SyzProxy.ReturnProxy("proxy.example.host", 12345, "username", "password"))
+	proxyClient, err := SyzProxy.ClientFromProxy(SyzProxy.ReturnProxy("proxy.example.host", 12345, "username", "password"), "proxytype")
 	if err != nil {
 		log.Fatal(err)
 	}
